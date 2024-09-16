@@ -138,14 +138,13 @@ func (api *API) ValidateXML(w http.ResponseWriter, r *http.Request) {
 }
 
 func (api *API) GenerateStructs(w http.ResponseWriter, r *http.Request) {
-	// Pegar o parâmetro 'schema' da query string para definir o XSD
+
 	schemaName := r.URL.Query().Get("schema")
 	if schemaName == "" {
 		http.Error(w, "Parâmetro 'schema' é obrigatório", http.StatusBadRequest)
 		return
 	}
 
-	// Formatar o caminho do XSD com base no parâmetro schemaName
 	xsdPath := fmt.Sprintf("./schemas/ACCC%s.xsd", schemaName)
 
 	fmt.Println(xsdPath + " - " + schemaName)
@@ -153,13 +152,12 @@ func (api *API) GenerateStructs(w http.ResponseWriter, r *http.Request) {
 	outputDir := fmt.Sprintf("./internal/structs/ACCC%s", schemaName)
 	schemaName = fmt.Sprintf("ACCC%s", schemaName)
 
-	// Definir as opções para xgen
 	options := &xgen.Options{
-		FilePath:            xsdPath,     // Utiliza o caminho absoluto do XSD
-		OutputDir:           outputDir,   // Diretório de saída para os structs gerados
-		InputDir:            "./schemas", // Diretório de entrada com os schemas XSD
-		Lang:                "go",        // Linguagem de saída (Go)
-		Package:             schemaName,  // Nome do pacote gerado
+		FilePath:            xsdPath,
+		OutputDir:           outputDir,
+		InputDir:            "./schemas",
+		Lang:                "go",
+		Package:             schemaName,
 		Extract:             false,
 		IncludeMap:          make(map[string]bool),
 		LocalNameNSMap:      make(map[string]string),
@@ -169,7 +167,6 @@ func (api *API) GenerateStructs(w http.ResponseWriter, r *http.Request) {
 		RemoteSchema:        make(map[string][]byte),
 	}
 
-	// Gerar os structs a partir do XSD
 	err := options.Parse()
 	if err != nil {
 		http.Error(w, "Erro ao gerar structs: "+err.Error(), http.StatusInternalServerError)
