@@ -1,0 +1,27 @@
+{
+  "XMLName": {
+    "Space": "http://www.cip-bancos.org.br/ARQ/ACCC470.xsd",
+    "Local": "ACCCDOC"
+  },
+  "BCARQ": {
+    "NomArq": "ACCC470_00000208_20240228_00003",
+    "NumCtrlEmis": "08732440469048976687",
+    "NumCtrlDestOr": "",
+    "ISPBEmissor": "00000208",
+    "ISPBDestinatario": "04391007",
+    "DtHrArq": "2024-02-28T16:53:31",
+    "SitReq": 0,
+    "GrupoSeq": null,
+    "DtRef": "2024-02-28"
+  },
+  "SISARQ": {
+    "ACCC470": {
+      "IdentdPartAdmdo": "60701190",
+      "GrupoACCC470NuGarantia": null,
+      "GrupoACCC470ChaveOrdem": null,
+      "GrupoACCC470ChaveDuplicata": null
+    },
+    "ACCC470RET": null
+  },
+  "ESTARQ": ""
+}

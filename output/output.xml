@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ACCCDOC xmlns="http://www.cip-bancos.org.br/ARQ/ACCC470.xsd">
+  <BCARQ>
+    <NomArq>ACCC470_00000208_20240228_00003</NomArq>
+    <NumCtrlEmis>08732440469048976687</NumCtrlEmis>
+    <ISPBEmissor>00000208</ISPBEmissor>
+    <ISPBDestinatario>04391007</ISPBDestinatario>
+    <DtHrArq>2024-02-28T16:53:31</DtHrArq>
+    <SitReq>0</SitReq>
+    <DtRef>2024-02-28</DtRef>
+  </BCARQ>
+  <SISARQ>
+    <ACCC470>
+      <IdentdPartAdmdo>60701190</IdentdPartAdmdo>
+    </ACCC470>
+  </SISARQ>
+</ACCCDOC>

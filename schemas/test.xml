@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ACCCDOC xmlns="http://www.cip-bancos.org.br/ARQ/ACCC470ERR.xsd"
+         xmlns:cat="http://www.cip-bancos.org.br/catalogomsg"
+         CodErro="123">
+    <!-- Este é um exemplo corrigido com base no schema e no erro apresentado -->
+
+    <!-- Corrigi o erro do 'CodErro' como um atributo no elemento raiz -->
+
+    <!-- Removi 'NumCtrlEmis' e outros elementos que não eram esperados -->
+    <BCARQ>
+        <NomArq>ACCC470ERR_00000208_20240228_00003</NomArq>
+        <ISPBEmissor>00000208</ISPBEmissor>
+        <ISPBDestinatario>04391007</ISPBDestinatario>
+        <DtHrArq>2024-02-28T16:53:31</DtHrArq>
+        <SitReq>0</SitReq>
+        <DtRef>2024-02-28</DtRef>
+    </BCARQ>
+
+    <!-- A estrutura de erro deve estar dentro da expectativa do schema -->
+    <Erro>
+        <CodErro>123</CodErro>
+        <DescErro>Arquivo de consulta de garantia contém erros.</DescErro>
+    </Erro>
+
+</ACCCDOC>
