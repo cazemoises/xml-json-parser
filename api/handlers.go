@@ -75,8 +75,40 @@ func (api *API) ConvertJSONToXML(w http.ResponseWriter, r *http.Request) {
 	xmlHeader := `<?xml version="1.0" encoding="UTF-8"?>` + "\n"
 	finalXML := xmlHeader + string(xmlData)
 
+	err = api.validateGeneratedXML(finalXML, "470")
+	if err != nil {
+		http.Error(w, "Erro na validação do XML gerado: "+err.Error(), http.StatusBadRequest)
+		return
+	}
+
 	w.Header().Set("Content-Type", "application/xml")
 	w.Write([]byte(finalXML))
+}
+
+func (api *API) validateGeneratedXML(xmlData string, schemaName string) error {
+	xsdPath := fmt.Sprintf("./schemas/ACCC%s.xsd", schemaName)
+	schemaContent, err := ioutil.ReadFile(xsdPath)
+	if err != nil {
+		return fmt.Errorf("arquivo XSD não encontrado: %s", schemaName)
+	}
+
+	xsdSchema, err := xsd.Parse(schemaContent)
+	if err != nil {
+		return fmt.Errorf("erro ao compilar o XSD: %v", err)
+	}
+	defer xsdSchema.Free()
+
+	doc, err := libxml2.Parse([]byte(xmlData))
+	if err != nil {
+		return fmt.Errorf("erro ao fazer parse do XML: %v", err)
+	}
+	defer doc.Free()
+
+	if err := xsdSchema.Validate(doc); err != nil {
+		return fmt.Errorf("erro na validação do XML: %v", err)
+	}
+
+	return nil
 }
 
 func (api *API) ValidateXML(w http.ResponseWriter, r *http.Request) {
@@ -124,6 +156,7 @@ func (api *API) ValidateXML(w http.ResponseWriter, r *http.Request) {
 
 	doc, err := libxml2.Parse(xmlData)
 	if err != nil {
+		fmt.Println(err)
 		http.Error(w, "Erro ao fazer parse do XML", http.StatusBadRequest)
 		return
 	}
