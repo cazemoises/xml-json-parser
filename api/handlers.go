@@ -26,8 +26,8 @@ func NewRouter(cfg *config.Config) *mux.Router {
 	api := &API{Config: cfg}
 
 	r := mux.NewRouter()
-	r.HandleFunc("/convert-xml-to-json", api.ConvertXMLToJSON).Methods("POST")
-	r.HandleFunc("/convert-json-to-xml", api.ConvertJSONToXML).Methods("POST")
+	r.HandleFunc("/convert/xml-json", api.ConvertXMLToJSON).Methods("POST")
+	r.HandleFunc("/convert/json-xml", api.ConvertJSONToXML).Methods("POST")
 	r.HandleFunc("/validate-xml", api.ValidateXML).Methods("POST")
 	r.HandleFunc("/generate-structs", api.GenerateStructs).Methods("POST")
 	return r
@@ -37,6 +37,38 @@ func (api *API) ConvertXMLToJSON(w http.ResponseWriter, r *http.Request) {
 	xmlData, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		http.Error(w, "Erro ao ler o corpo da requisição", http.StatusBadRequest)
+		return
+	}
+
+	schemaName := r.URL.Query().Get("schema")
+	if schemaName == "" {
+		http.Error(w, "Parâmetro 'schema' é obrigatório", http.StatusBadRequest)
+		return
+	}
+
+	xsdPath := fmt.Sprintf("./schemas/ACCC%s.xsd", schemaName)
+	schemaContent, err := ioutil.ReadFile(xsdPath)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Arquivo XSD não encontrado: %s", xsdPath), http.StatusNotFound)
+		return
+	}
+
+	xsdSchema, err := xsd.Parse(schemaContent)
+	if err != nil {
+		http.Error(w, "Erro ao compilar o XSD", http.StatusInternalServerError)
+		return
+	}
+	defer xsdSchema.Free()
+
+	doc, err := libxml2.Parse(xmlData)
+	if err != nil {
+		http.Error(w, "Erro ao fazer parse do XML", http.StatusBadRequest)
+		return
+	}
+	defer doc.Free()
+
+	if err := xsdSchema.Validate(doc); err != nil {
+		http.Error(w, "Erro na validação do XML: "+err.Error(), http.StatusBadRequest)
 		return
 	}
 
@@ -57,6 +89,12 @@ func (api *API) ConvertJSONToXML(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	schemaName := r.URL.Query().Get("schema")
+	if schemaName == "" {
+		http.Error(w, "Parâmetro 'schema' é obrigatório", http.StatusBadRequest)
+		return
+	}
+
 	var doc schemas.ACCCDOCComplexType
 	err = json.Unmarshal(jsonData, &doc)
 	if err != nil {
@@ -64,7 +102,7 @@ func (api *API) ConvertJSONToXML(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	doc.Xmlns = "http://www.cip-bancos.org.br/ARQ/ACCC470.xsd"
+	doc.Xmlns = fmt.Sprintf("http://www.cip-bancos.org.br/ARQ/ACCC%s.xsd", schemaName)
 
 	xmlData, err := xml.MarshalIndent(doc, "", "  ")
 	if err != nil {
@@ -74,6 +112,32 @@ func (api *API) ConvertJSONToXML(w http.ResponseWriter, r *http.Request) {
 
 	xmlHeader := `<?xml version="1.0" encoding="UTF-8"?>` + "\n"
 	finalXML := xmlHeader + string(xmlData)
+
+	xsdPath := fmt.Sprintf("./schemas/ACCC%s.xsd", schemaName)
+	schemaContent, err := ioutil.ReadFile(xsdPath)
+	if err != nil {
+		http.Error(w, fmt.Sprintf("Arquivo XSD não encontrado: %s", xsdPath), http.StatusNotFound)
+		return
+	}
+
+	xsdSchema, err := xsd.Parse(schemaContent)
+	if err != nil {
+		http.Error(w, "Erro ao compilar o XSD", http.StatusInternalServerError)
+		return
+	}
+	defer xsdSchema.Free()
+
+	docXML, err := libxml2.Parse([]byte(finalXML))
+	if err != nil {
+		http.Error(w, "Erro ao fazer parse do XML", http.StatusBadRequest)
+		return
+	}
+	defer docXML.Free()
+
+	if err := xsdSchema.Validate(docXML); err != nil {
+		http.Error(w, "Erro na validação do XML: "+err.Error(), http.StatusBadRequest)
+		return
+	}
 
 	w.Header().Set("Content-Type", "application/xml")
 	w.Write([]byte(finalXML))
